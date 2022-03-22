@@ -50,7 +50,7 @@ def record_audio_test():
 	CHANNELS = 1
 	RATE = 44100
 	CHUNK = 512
-	RECORD_SECONDS = 6
+	RECORD_SECONDS = 4
 
 	audio = pyaudio.PyAudio()
 
@@ -62,7 +62,7 @@ def record_audio_test():
 
 	Recordframes = []
 	for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
-		data = stream.read(CHUNK)
+		data = stream.read(CHUNK, exception_on_overflow=False)
 		Recordframes.append(data)
 	stream.stop_stream()
 	stream.close()

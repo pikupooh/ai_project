@@ -1,4 +1,7 @@
 import time
 
-time.sleep(2)
-print("Hello from test")
+temp = time.time()
+print(temp)
+time.sleep(5)
+temp = time.time()
+print(temp)

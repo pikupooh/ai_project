@@ -50,7 +50,7 @@ def record_audio_test():
 	CHANNELS = 1
 	RATE = 44100
 	CHUNK = 512
-	RECORD_SECONDS = 4
+	RECORD_SECONDS = 5
 
 	audio = pyaudio.PyAudio()
 

@@ -11,6 +11,7 @@ from threading import Timer
 import SpeakerIdentification
 from queue import Queue
 from speaker import Speaker
+from speechText import SpeechText
 
 from videoFrame import VideoFrame
 
@@ -18,6 +19,7 @@ video_frames = Queue()
 video_display_started = False
 
 speakers = Queue()
+speech_texts = Queue()
 
 def face_reg():
     # Encode faces from a folder
@@ -63,6 +65,7 @@ def draw_video_frames():
     first_frame = True
 
     speaker = speakers.get()
+    subs = speech_texts.get()
     
     while True:
         new_frame = video_frames.get()
@@ -74,18 +77,14 @@ def draw_video_frames():
         if speaker.getTimestamp() < prev_timestamp:
             speaker = speakers.get()
 
+        if subs.getTimestamp() < prev_timestamp:
+            subs = speech_texts.get()
+
         if not first_frame:
             time.sleep(delta_time)
 
         cv2.putText(frame, speaker.getSpeaker() + ' speaking ',(50, 50 ), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
-
-        # t1 = str(new_frame.getTimestamp())
-        # t2 = str(speaker.getTimestamp())
-        # cv2.putText(frame, t1 ,(50, 100 ), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
-        # cv2.putText(frame, t2 ,(50, 150 ), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
-
-        cv2.namedWindow("Frame", cv2.WINDOW_NORMAL)
-        cv2.resizeWindow("Frame", 1000, 800)
+        cv2.putText(frame, subs.getSpeechText() ,(200, 600 ), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
 
         cv2.imshow("Frame", frame)
         key = cv2.waitKey(1)
@@ -115,24 +114,21 @@ def speaker_reg():
         speaker = Speaker(timestamp, speaker_name)
         speakers.put(speaker)
 
-        global video_display_started
-        video_display_started = True
-
-        # print("audio record stopped")
-        # # print("Speech to text started")
-        # os.system('python speechReg.py')
-        # dir_path = os.getcwd()
-        # audio_file = s.AudioFile(dir_path + '\\testing_set\\sample.wav')
-        # with audio_file as m:
-        #     try:
-        #         audio=sr.record(m)
-        #         query=sr.recognize_google(audio,language='eng-in')
-        #         # print(query)
-        #         speech_text = query
-        #     except:
-        #         speech_text = ""
-
-        # # print(speech_text)
+        dir_path = os.getcwd()
+        audio_file = s.AudioFile(dir_path + '\\testing_set\\sample.wav')
+        with audio_file as m:
+            try:
+                audio=sr.record(m)
+                query=sr.recognize_google(audio,language='eng-in')
+                # print(query)
+                speech_text = query
+            except:
+                speech_text = "none"
+            
+            finally:
+                speech_texts.put(SpeechText(timestamp, speech_text, speaker))
+            
+        print(speech_text)
 
 face_thread = threading.Thread(target=face_reg)
 speaker_thread = threading.Thread(target=speaker_reg)

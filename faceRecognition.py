@@ -1,16 +1,13 @@
-from asyncio.windows_events import NULL
-import math
 import time
 import os
-from xml.etree.ElementTree import tostring
 import cv2
 from simple_facerec import SimpleFacerec
 import speech_recognition as s
 import threading
-from threading import Timer
 import SpeakerIdentification
 from queue import Queue
 from speaker import Speaker
+from speech_text import SpeechText
 
 from videoFrame import VideoFrame
 
@@ -18,6 +15,7 @@ video_frames = Queue()
 video_display_started = False
 
 speakers = Queue()
+speech_texts = Queue()
 
 def face_reg():
     # Encode faces from a folder
@@ -63,12 +61,13 @@ def draw_video_frames():
     first_frame = True
 
     speaker = speakers.get()
+    text = ""
     
     while True:
         new_frame = video_frames.get()
         frame = new_frame.getFrame()
         
-        delta_time = new_frame.getTimestamp() - prev_timestamp
+        delta_time = (new_frame.getTimestamp() - prev_timestamp ) / 3
         prev_timestamp = new_frame.getTimestamp()
 
         if speaker.getTimestamp() < prev_timestamp:
@@ -77,12 +76,28 @@ def draw_video_frames():
         if not first_frame:
             time.sleep(delta_time)
 
+        if text == "":
+            try:
+                text = speech_texts.get_nowait()
+            except:
+                text = ""
+        
+        if text != "":
+            cv2.putText(frame, text.getText() ,(50, 200 ), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
+
+            if text.getTimestamp() < prev_timestamp:
+                try:
+                    text = speech_texts.get_nowait()
+                except:
+                    text = ""
+
         cv2.putText(frame, speaker.getSpeaker() + ' speaking ',(50, 50 ), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
 
-        # t1 = str(new_frame.getTimestamp())
-        # t2 = str(speaker.getTimestamp())
-        # cv2.putText(frame, t1 ,(50, 100 ), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
-        # cv2.putText(frame, t2 ,(50, 150 ), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
+        t1 = str(new_frame.getTimestamp())
+        t2 = str(speaker.getTimestamp())
+        cv2.putText(frame, "frame - " + t1 , (50, 100 ), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
+        cv2.putText(frame, "speaker - " + t2 , (50, 150 ), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
+        
 
         cv2.namedWindow("Frame", cv2.WINDOW_NORMAL)
         cv2.resizeWindow("Frame", 1000, 800)
@@ -95,19 +110,14 @@ def draw_video_frames():
 
         first_frame = False
 
-        
-        
-
 
 def speaker_reg():
 
     global speaker_name
     global speech_text
-    sr=s.Recognizer()
+    sr = s.Recognizer()
 
-    while True:
-        # print("audio record started")
-        
+    while True:        
         SpeakerIdentification.record_audio_test()
         timestamp = time.time()
         speaker_name = SpeakerIdentification.test_model()
@@ -118,21 +128,18 @@ def speaker_reg():
         global video_display_started
         video_display_started = True
 
-        # print("audio record stopped")
-        # # print("Speech to text started")
-        # os.system('python speechReg.py')
-        # dir_path = os.getcwd()
-        # audio_file = s.AudioFile(dir_path + '\\testing_set\\sample.wav')
-        # with audio_file as m:
-        #     try:
-        #         audio=sr.record(m)
-        #         query=sr.recognize_google(audio,language='eng-in')
-        #         # print(query)
-        #         speech_text = query
-        #     except:
-        #         speech_text = ""
+        dir_path = os.getcwd()
+        audio_file = s.AudioFile(dir_path + '\\testing_set\\sample.wav')
+        with audio_file as m:
+            try:
+                audio=sr.record(m)
+                query=sr.recognize_google(audio,language='eng-in')
+                speechText = SpeechText(timestamp, query)
+                speech_texts.put(speechText)
+            except:
+                speech_text = ""
 
-        # # print(speech_text)
+        
 
 face_thread = threading.Thread(target=face_reg)
 speaker_thread = threading.Thread(target=speaker_reg)
@@ -146,7 +153,6 @@ video_display_thread.daemon = True
 
 if __name__ == "__main__":
     face_thread.start()
-    
     face_thread.join()
     
 

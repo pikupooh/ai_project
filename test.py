@@ -1,7 +1,8 @@
-import time
+from queue import Queue
 
-temp = time.time()
-print(temp)
-time.sleep(5)
-temp = time.time()
-print(temp)
+dq = Queue()
+
+try:
+    temp = dq.get_nowait()
+except:
+    print("empty")

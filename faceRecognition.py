@@ -93,10 +93,10 @@ def draw_video_frames():
 
         cv2.putText(frame, speaker.getSpeaker() + ' speaking ',(50, 50 ), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
 
-        t1 = str(new_frame.getTimestamp())
-        t2 = str(speaker.getTimestamp())
-        cv2.putText(frame, "frame - " + t1 , (50, 100 ), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
-        cv2.putText(frame, "speaker - " + t2 , (50, 150 ), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
+        # t1 = str(new_frame.getTimestamp())
+        # t2 = str(speaker.getTimestamp())
+        # cv2.putText(frame, "frame - " + t1 , (50, 100 ), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
+        # cv2.putText(frame, "speaker - " + t2 , (50, 150 ), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
         
 
         cv2.namedWindow("Frame", cv2.WINDOW_NORMAL)

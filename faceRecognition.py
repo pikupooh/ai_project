@@ -57,7 +57,7 @@ def draw_video_frames():
     while not video_display_started:
         continue
 
-    prev_timestamp = 0
+    prev_timestamp = time.time()
     first_frame = True
 
     speaker = speakers.get()
@@ -70,7 +70,7 @@ def draw_video_frames():
         delta_time = (new_frame.getTimestamp() - prev_timestamp ) / 3
         prev_timestamp = new_frame.getTimestamp()
 
-        if speaker.getTimestamp() < prev_timestamp:
+        if speaker.getEndTimestamp() < prev_timestamp:
             speaker = speakers.get()
 
         if not first_frame:
@@ -85,7 +85,7 @@ def draw_video_frames():
         if text != "":
             cv2.putText(frame, text.getText() ,(50, 200 ), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
 
-            if text.getTimestamp() < prev_timestamp:
+            if text.getEndTimestamp() < prev_timestamp:
                 try:
                     text = speech_texts.get_nowait()
                 except:
@@ -117,12 +117,13 @@ def speaker_reg():
     global speech_text
     sr = s.Recognizer()
 
-    while True:        
+    while True:  
+        startTimestamp = time.time()      
         SpeakerIdentification.record_audio_test()
-        timestamp = time.time()
+        endTimestamp = time.time()
         speaker_name = SpeakerIdentification.test_model()
         
-        speaker = Speaker(timestamp, speaker_name)
+        speaker = Speaker(startTimestamp, endTimestamp, speaker_name)
         speakers.put(speaker)
 
         global video_display_started
@@ -134,7 +135,7 @@ def speaker_reg():
             try:
                 audio=sr.record(m)
                 query=sr.recognize_google(audio,language='eng-in')
-                speechText = SpeechText(timestamp, query)
+                speechText = SpeechText(startTimestamp, endTimestamp, query)
                 speech_texts.put(speechText)
             except:
                 speech_text = ""

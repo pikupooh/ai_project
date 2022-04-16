@@ -138,7 +138,8 @@ def speaker_reg():
                 speechText = SpeechText(startTimestamp, endTimestamp, query)
                 speech_texts.put(speechText)
             except:
-                speech_text = ""
+                speechText = SpeechText(startTimestamp, endTimestamp, "")
+                speech_texts.put(speechText)
 
         
 

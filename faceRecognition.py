@@ -95,7 +95,10 @@ def draw_video_frames():
                     text = ""
 
         if speaker.getSpeaker() == new_frame.getName() and speaker.getSpeaker() != "":
-            cv2.putText(frame, "Verified", (100, 20),  cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
+            cv2.putText(frame, "Verified", (500, 50),  cv2.FONT_HERSHEY_DUPLEX, 1, (0, 200, 0), 2)
+        else:
+            cv2.putText(frame, "Unauthorized", (400, 50),  cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
+
 
         cv2.putText(frame, speaker.getSpeaker() + ' speaking ',(50, 50 ), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
 

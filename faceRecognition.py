@@ -35,13 +35,16 @@ def face_reg():
 
         # Detect Faces
         face_locations, face_names = sfr.detect_known_faces(frame)
+        speaker_name = ""
         for face_loc, name in zip(face_locations, face_names):
             y1, x2, y2, x1 = face_loc[0], face_loc[1], face_loc[2], face_loc[3]
 
             cv2.putText(frame, name,(x1, y1 - 10), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 200), 4)
 
-        videoframe = VideoFrame(time.time(), frame)
+            speaker_name = name
+
+        videoframe = VideoFrame(time.time(), frame, speaker_name)
         video_frames.put(videoframe) 
 
         key = cv2.waitKey(1)
@@ -91,7 +94,12 @@ def draw_video_frames():
                 except:
                     text = ""
 
+        if speaker.getSpeaker() == new_frame.getName() and speaker.getSpeaker() != "":
+            cv2.putText(frame, "Verified", (100, 20),  cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
+
         cv2.putText(frame, speaker.getSpeaker() + ' speaking ',(50, 50 ), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 200), 2)
+
+
 
         # t1 = str(new_frame.getTimestamp())
         # t2 = str(speaker.getTimestamp())
